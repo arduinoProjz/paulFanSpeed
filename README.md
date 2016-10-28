@@ -13,15 +13,15 @@ Arduino fan speed control sketch for Paul ventilation unit Focus 200/Novus 300. 
 This sketch works with ethernet shield and custom made "paul relay shield". I have tested it with arduino mega board (because of hardware serial port), but it should also work with uno and software serial
 
 4. Setup
-- download the zip file
-- copy HardwareSerial into the libraries directory of your Arduino folder
+  * download the zip file
+  * copy HardwareSerial into the libraries directory of your Arduino folder
 
 5. Usage
-- build (and solder) your "paul relay shield"
-- mount it together with arduino board, network shield
-- connect it between control unit and adapter board
-- configure your local network IP address for network shield in main file
-- upload the sketch
+  * build (and solder) your "paul relay shield"
+  * mount it together with arduino board, network shield
+  * connect it between control unit and adapter board
+  * configure your local network IP address for network shield in main file
+  * upload the sketch
 
 6. Paul relay shield
 
