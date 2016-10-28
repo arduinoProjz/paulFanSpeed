@@ -54,6 +54,9 @@ void PaulCommand::addWordToMessage(word messageWord) {
         //todo checksum!
         int page = this->commandBuffer[3] / 16;
         memcpy(this->pages[page], this->commandBuffer, 21*2); //save page 0xxx (params: dest, source, length)
+        if (page == 2 and !this->controlPanelDetected) {
+          detectControlPanel();
+        }
         Serial.print(F("-savePage"));
         Serial.print(this->commandBuffer[3], HEX);
         Serial.println(F("-"));
@@ -67,13 +70,26 @@ void PaulCommand::addWordToMessage(word messageWord) {
   }
 }
 
+void PaulCommand::detectControlPanel() {
+  this->controlPanelDetected = true;
+  if (this->pages[2][14]==1) { //1=LED,0=TFT
+    //LCD panel
+    FANSPEED_PAGE = 2; //LED
+    FANSPEED_POSITION = 12; //LED 
+  } else {
+    //TFT
+    FANSPEED_PAGE = 0; //TFT
+    FANSPEED_POSITION = 8; //TFT
+  }
+}
+
 void PaulCommand::injectReply() {
 
 
   //master asks whether there is something new from control panel
   if (this->commandBuffer[2] == 1) {
     rs485transmitOn();
-    if (PAGE==0x00) { 
+    if (FANSPEED_PAGE==0) { 
       reply0x00HasChanged(); // tft - yes, something has changed
     } else {
       reply0x20HasChanged(); // led - yes, something has changed
@@ -84,7 +100,7 @@ void PaulCommand::injectReply() {
   }
 
   //master asks for changed values on PAGE)
-  if (this->commandBuffer[2] == 3 && this->commandBuffer[3]==PAGE) { //data query on PAGE?
+  if (this->commandBuffer[2] == 3 && this->commandBuffer[3]==FANSPEED_PAGE*16) { //data query on PAGE?
     rs485transmitOn();
     replyPage(); // reply changed value
     Serial1.flush();
@@ -117,13 +133,13 @@ void PaulCommand::reply0x20HasChanged() {
 
 void PaulCommand::replyPage() {
   //manipulate destadress and fanspeed, xor
-  this->adress0x20buff[0] = 0x101; //to master
-  this->adress0x20buff[4+FANSPEED_POSITION] = this->fanSpeed; //1st data byte is on address 0x04
-  this->adress0x20buff[20] = xorFE(20);
+  this->pages[FANSPEED_PAGE][0] = 0x101; //to master
+  this->pages[FANSPEED_PAGE][4+FANSPEED_POSITION] = this->fanSpeed; //1st data byte is on address 0x04
+  this->pages[FANSPEED_PAGE][20] = xorFE(this->pages[FANSPEED_PAGE],20);
   for(int i=0; i<21; i++) {
-    Serial1.write(this->adress0x20buff[i]);
+    Serial1.write(this->pages[FANSPEED_PAGE][i]);
   }
-  Serial.write("-replyPage"); Serial.print(PAGE, HEX); Serial.write("-");        
+  Serial.write("-replyPage0x"); Serial.print(FANSPEED_PAGE*16, HEX); Serial.write("-");        
 }
 
 //helper methods
@@ -136,11 +152,11 @@ void PaulCommand::logCommand() {
   Serial.println();
 }
 
-//xor - computes 0xFE XOR on replyBuffer[0 to bytesCount-1] 
-byte PaulCommand::xorFE(int bytesCount) {
+//xor - computes 0xFE XOR on given array[0 to length-1] 
+byte PaulCommand::xorFE(word arrayXor[], int arrayLength) {
    byte checksum = 0xFE;
-   for(int i=0; i<bytesCount; i++) {
-    checksum = checksum ^ (this->adress0x20buff[i] & 0xFF); //checkum on lower 8 bit!
+   for(int i=0; i<arrayLength; i++) {
+    checksum = checksum ^ (arrayXor[i] & 0xFF); //checkum on lower 8 bit!
    }
   return checksum;
 }
@@ -150,13 +166,6 @@ void PaulCommand::changeFanSpeed(int fanSpeed) {
   this->requestChangeFanSpeed = true; //start 
   relayOn();
   this->fanSpeed = fanSpeed;
-}
-
-word PaulCommand::getAdress0x20buff(int index) {
-  if (index>=0 && index< COMMAND_MAX_SIZE) {
-    return this->adress0x20buff[index]; 
-  }
-  return 0;
 }
 
 word PaulCommand::getPageData(int page, int data) {

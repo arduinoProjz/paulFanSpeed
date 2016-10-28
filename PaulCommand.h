@@ -12,13 +12,17 @@ class PaulCommand
   // fan speed change configuration for LCD panel and TFT touch screen
   // LCD panel replies fan speed on 3rd page (0x20) and 13th (Data12) position
   // TFT touchscreen replies fan speed on 1st page (0x00) and 9th (Data8) position  
-  static const int PAGE = 0x20; //LED
-  static const int FANSPEED_POSITION = 12; //LED
+  // static const int PAGE = 2; //LED 0x20
+  // static const int FANSPEED_POSITION = 12; //LED
 
-  //static const int PAGE = 0x00; //TFT
+  //static const int PAGE = 0; //TFT 0x00
   //static const int FANSPEED_POSITION = 8; //TFT
 
   private:
+    bool controlPanelDetected = false;
+    int FANSPEED_PAGE = 2; //LED
+    int FANSPEED_POSITION = 12; //LED
+    void detectControlPanel();
 
     word commandBuffer[COMMAND_MAX_SIZE]; //longest command is 21 byte long
     // commandBuffer[0] - address - eg. 0x102,0x101
@@ -26,9 +30,6 @@ class PaulCommand
     // commandBuffer[2] - command type
     int commandIndex = 0; //index in command, next byte will be written on this index
     bool commandStarted = false;
-
-    word adress0x20buff[COMMAND_MAX_SIZE]; //place to data from adress 0x20, will be filled when master send 
-    //it to cp and reused on change fan speed reply
 
     static const int MAXPAGES = 6;
     word pages[MAXPAGES][COMMAND_MAX_SIZE]; // max 16 pages 
@@ -43,7 +44,7 @@ class PaulCommand
 
     int replyLength = 0; //length of reply command (position 0 to replyLength-1)
 
-    byte xorFE(int bytesCount);
+    byte xorFE(word arrayXor[], int arrayLength);
 
     bool requestChangeFanSpeed = false; // true=request to change
     int fanSpeed = 3; //1-7
