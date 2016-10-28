@@ -50,9 +50,13 @@ void PaulCommand::addWordToMessage(word messageWord) {
     if ((this->commandIndex>1) && (this->commandIndex == this->commandBuffer[1] + 4)) { // 4 bytes extra: adress, lenght, command, checksum
       //logCommand();
       //is it config info to save for reply?
-      if (this->commandBuffer[2] == 4 && this->commandBuffer[3] == PAGE && this->commandBuffer[1] == 0x11) { // saves adress 0x20, length should be 0x11
-        memcpy(this->adress0x20buff, this->commandBuffer, 21*2); //save register 0x20 (params: dest, source, length)
-        Serial.println(F("-saveAdress0xxx"));
+      if (this->commandBuffer[2] == 4 && this->commandBuffer[3] >=0 && this->commandBuffer[3] <MAXPAGES*16 && this->commandBuffer[1] == 0x11) { // saves pages 0x00 - 0x50, length should be 0x11
+        //todo checksum!
+        int page = this->commandBuffer[3] / 16;
+        memcpy(this->pages[page], this->commandBuffer, 21*2); //save page 0xxx (params: dest, source, length)
+        Serial.print(F("-savePage"));
+        Serial.print(this->commandBuffer[3], HEX);
+        Serial.println(F("-"));
       }
       //request for fan speed change in progess? 
       if (this->requestChangeFanSpeed) {  
@@ -151,6 +155,13 @@ void PaulCommand::changeFanSpeed(int fanSpeed) {
 word PaulCommand::getAdress0x20buff(int index) {
   if (index>=0 && index< COMMAND_MAX_SIZE) {
     return this->adress0x20buff[index]; 
+  }
+  return 0;
+}
+
+word PaulCommand::getPageData(int page, int data) {
+  if (page>=0 && page<MAXPAGES && data>=0 && data< COMMAND_MAX_SIZE) {
+    return this->pages[page][data];
   }
   return 0;
 }

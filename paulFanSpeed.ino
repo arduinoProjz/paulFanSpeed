@@ -4,7 +4,7 @@
 
 /* 
  * sketch for paul FOCUS200 ventilation unit to control fan speed over HTTP
- * Oct 2016, v0.1
+ * Oct 2016, v0.3 - saves pages 00 - 50
  * 
  * prerequestments HW
  * mega board, 
@@ -132,19 +132,22 @@ void checkClient() {
     
     //Transmit the register 0x20 values (data 0 - 15) to the Web Browser in JSON format
     //Example Transmission: [{0, 0}, {1, 54}, {2,1} ...]
-    client.print(F("["));                           // This is tha starting bracket of the JSON data
-    for(int i=0; i<16; i++){                     
-      client.print(F("{"));
-      client.print(i);                           
-      client.print(F(","));
-      client.print(paulCommand.getAdress0x20buff(i+4), HEX);               // data byte starts at offset 4 in message
-      if(i==15){
-        client.print(F("}"));                       // The last value will end with a bracket (without a comma)
-      } else {
-        client.print(F("},"));                      // All other values will have a comma after the bracket.
+    for(int j=0; j<6; j++){
+      client.print(F("["));                           // This is tha starting bracket of the JSON data
+      client.print(j,HEX);                           
+      for(int i=0; i<16; i++){                     
+        client.print(F("{"));
+        client.print(i,HEX);                           
+        client.print(F(","));
+        client.print(paulCommand.getPageData(j,i+4), HEX);               // data byte starts at offset 4 in message
+        if(i==15){
+          client.print(F("}"));                       // The last value will end with a bracket (without a comma)
+        } else {
+          client.print(F("},"));                      // All other values will have a comma after the bracket.
+        }
       }
+      client.println(F("]"));                         // This is the final bracket of the JSON data
     }
-    client.println(F("]"));                         // This is the final bracket of the JSON data
     delay(10);                                     // give the web browser time to receive the data
     client.stop();                               // This method terminates the connection to the client
     Serial.println(F("Client has closed"));         // Print the message to the Serial monitor to indicate that the client connection has closed.

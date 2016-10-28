@@ -30,6 +30,9 @@ class PaulCommand
     word adress0x20buff[COMMAND_MAX_SIZE]; //place to data from adress 0x20, will be filled when master send 
     //it to cp and reused on change fan speed reply
 
+    static const int MAXPAGES = 6;
+    word pages[MAXPAGES][COMMAND_MAX_SIZE]; // max 16 pages 
+    
     void logCommand();
     void replyAck();
     void replyNoChange();
@@ -56,6 +59,7 @@ class PaulCommand
     void addWordToMessage(word messageWord);
 
     word getAdress0x20buff(int index); //return one word from 0x20 Buffer, index = 0 - COMMAND_MAX_SIZE 
+    word getPageData(int page, int data);
     void changeFanSpeed(int fanSpeed); //1-7
     void init();
 };
