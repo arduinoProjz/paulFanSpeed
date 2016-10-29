@@ -2,9 +2,9 @@
 
 1. History
 Release		Date		Changes
-v0.1		2016-10-08	initial release
-v0.3 		2016-10-24	configuration for LED panel/TFT touchscreen
-v0.4    2016-10-28  autodetect LED/TFT
+ * v0.1		2016-10-08	initial release
+ * v0.3 		2016-10-24	configuration for LED panel/TFT touchscreen
+ * v0.4    2016-10-28  autodetect LED/TFT
 
 2. Description
 Arduino fan speed control sketch for Paul ventilation unit Focus 200/Novus 300. These units uses RS485 serial communication in master-slave arrangement.
