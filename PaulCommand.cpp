@@ -72,7 +72,7 @@ void PaulCommand::addWordToMessage(word messageWord) {
 
 void PaulCommand::detectControlPanel() {
   this->controlPanelDetected = true;
-  if (this->pages[2][14]==1) { //1=LED,0=TFT
+  if (this->pages[2][4+14]==1) { //data 14 - 1=LED,0=TFT
     //LCD panel
     FANSPEED_PAGE = 2; //LED
     FANSPEED_POSITION = 12; //LED 

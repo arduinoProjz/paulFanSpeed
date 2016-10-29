@@ -19,9 +19,6 @@ class PaulCommand
   //static const int FANSPEED_POSITION = 8; //TFT
 
   private:
-    bool controlPanelDetected = false;
-    int FANSPEED_PAGE = 2; //LED
-    int FANSPEED_POSITION = 12; //LED
     void detectControlPanel();
 
     word commandBuffer[COMMAND_MAX_SIZE]; //longest command is 21 byte long
@@ -63,6 +60,11 @@ class PaulCommand
     word getPageData(int page, int data);
     void changeFanSpeed(int fanSpeed); //1-7
     void init();
+
+    bool controlPanelDetected = false;
+    int FANSPEED_PAGE = 2; //LED
+    int FANSPEED_POSITION = 12; //LED
+
 };
 
 #endif

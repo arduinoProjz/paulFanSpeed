@@ -148,6 +148,17 @@ void checkClient() {
       }
       client.println(F("]"));                         // This is the final bracket of the JSON data
     }
+    client.print(F("[controlpanel,"));                         // This is the final bracket of the JSON data
+    if (paulCommand.controlPanelDetected) {
+      if (paulCommand.FANSPEED_PAGE == 2) {
+        client.print(F("LED"));           
+      } else {
+        client.print(F("TFT"));           
+      }
+    } else {
+      client.print(F("not detected"));                         
+    }
+    client.println(F("]"));                         
     delay(10);                                     // give the web browser time to receive the data
     client.stop();                               // This method terminates the connection to the client
     Serial.println(F("Client has closed"));         // Print the message to the Serial monitor to indicate that the client connection has closed.
