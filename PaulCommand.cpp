@@ -49,17 +49,19 @@ void PaulCommand::addWordToMessage(word messageWord) {
     //is message for 0x102 completed?
     if ((this->commandIndex>1) && (this->commandIndex == this->commandBuffer[1] + 4)) { // 4 bytes extra: adress, lenght, command, checksum
       //logCommand();
-      //is it config info to save for reply?
+      //is it a page to save?
       if (this->commandBuffer[2] == 4 && this->commandBuffer[3] >=0 && this->commandBuffer[3] <MAXPAGES*16 && this->commandBuffer[1] == 0x11) { // saves pages 0x00 - 0x50, length should be 0x11
-        //todo checksum!
-        int page = this->commandBuffer[3] / 16;
-        memcpy(this->pages[page], this->commandBuffer, 21*2); //save page 0xxx (params: dest, source, length)
-        if (page == 2 and !this->controlPanelDetected) {
-          detectControlPanel();
+        //check checksum!
+        if (this->commandBuffer[20] == xorFE(this->commandBuffer,20)) { //xorFE of positions 0 till 19 (20 bytes) should be same as value date of 21st byte (position 20)
+          int page = this->commandBuffer[3] / 16;
+          memcpy(this->pages[page], this->commandBuffer, 21*2); //save page 0xxx (params: dest, source, length)
+          if (page == 2) {
+            detectControlPanel();
+          }
+          Serial.print(F("-savePage"));
+          Serial.print(this->commandBuffer[3], HEX);
+          Serial.println(F("-"));
         }
-        Serial.print(F("-savePage"));
-        Serial.print(this->commandBuffer[3], HEX);
-        Serial.println(F("-"));
       }
       //request for fan speed change in progess? 
       if (this->requestChangeFanSpeed) {  
